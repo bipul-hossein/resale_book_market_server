@@ -18,7 +18,7 @@ app.listen(port, () => {
 });
 
 
-
+//const uri ="mongodb://localhost:27017"
 const uri = `mongodb+srv://${process.env.DB}:${process.env.DP}@cluster0.8gaczek.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -35,11 +35,11 @@ async function run() {
             res.send(categories)
         })
 
-        app.get('/categories/:categoryName', async (req, res) => {
-            const category = req.params.categoryName;
-            const query = { categoryName: category }
-            const categoryBooks =await categoryBookCollection.find(query).toArray();
-            res.send(categoryBookCollection)
+        app.get('/categories/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { categoryName: id }
+            const categoryBooks = await categoryBookCollection.find(query).toArray();
+            res.send(categoryBooks)
         })
 
     } finally { }
