@@ -71,9 +71,36 @@ async function run() {
             res.send(allBuyer)
         })
 
-        app.get('/sellers',verifyJWT, async (req, res) => {
+        //admin check
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' });
+        })
+
+        //seller check
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' });
+        })
+
+        app.get('/sellerbook/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { sellerEmail: email }
+            console.log(query)
+            const books = await categoryBookCollection.find(query).toArray()
+            console.log(books)
+            res.send(books)
+        })
+
+
+
+        app.get('/sellers', verifyJWT, async (req, res) => {
             console.log(req.headers.authorization)
-           
+
             const query = { role: "seller" }
             const allSeller = await usersCollection.find(query).toArray()
             res.send(allSeller)
@@ -86,6 +113,12 @@ async function run() {
             const result = await bookingCollection.insertOne(booking);
             res.send(result)
         });
+
+        app.post('/addbook', async (req, res) => {
+            const addBook = req.body;
+            const result = await categoryBookCollection.insertOne(addBook)
+            res.send(result)
+        })
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
