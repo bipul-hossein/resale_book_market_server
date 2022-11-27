@@ -4,7 +4,7 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const cors = require('cors')
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 //middleware
@@ -40,9 +40,7 @@ function verifyJWT(req, res, next) {
         req.decoded = decoded;
         next();
     })
-
 }
-
 
 async function run() {
     try {
@@ -87,20 +85,23 @@ async function run() {
             res.send({ isSeller: user?.role === 'seller' });
         })
 
-        app.get('/sellerbook/:email', async (req, res) => {
+   app.get('/user/orders/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const result = await bookingCollection.find(query).toArray()
+            res.send(result)
+     }  )
+
+        app.get('/myorders/:email', async (req, res) => {
             const email = req.params.email;
             const query = { sellerEmail: email }
-            console.log(query)
             const books = await categoryBookCollection.find(query).toArray()
-            console.log(books)
             res.send(books)
         })
 
 
-
         app.get('/sellers', verifyJWT, async (req, res) => {
             console.log(req.headers.authorization)
-
             const query = { role: "seller" }
             const allSeller = await usersCollection.find(query).toArray()
             res.send(allSeller)
@@ -109,7 +110,6 @@ async function run() {
 
         app.post('/bookings', async (req, res) => {
             const booking = req.body;
-            console.log(booking);
             const result = await bookingCollection.insertOne(booking);
             res.send(result)
         });
@@ -123,23 +123,40 @@ async function run() {
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
-            console.log(email)
             const user = await usersCollection.findOne(query);
             if (user) {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
                 return res.send({ accessToken: token })
             }
-            console.log(user)
             res.status(403).send({ accessToken: '' })
         })
 
 
-        app.post('/users', async (req, res) => {
+        app.put('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
+            const email =user.email
+           /*  const query ={email:email}
+            const options = { upsert: true }; */
+
             const result = await usersCollection.insertOne(user);
             res.send(result);
+
+
         });
+
+        app.delete('/book/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await categoryBookCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        app.delete('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(query);
+            res.send(result)
+        })
 
     } finally { }
 }
