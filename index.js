@@ -21,8 +21,8 @@ app.listen(port, () => {
 });
 
 
-const uri = "mongodb://localhost:27017"
-//const uri = `mongodb+srv://${process.env.DB}:${process.env.DP}@cluster0.8gaczek.mongodb.net/?retryWrites=true&w=majority`;
+//const uri = "mongodb://localhost:27017"
+const uri = `mongodb+srv://${process.env.DB}:${process.env.DP}@cluster0.8gaczek.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req, res, next) {
@@ -85,6 +85,15 @@ async function run() {
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isSeller: user?.role === 'seller' });
+        })
+
+        app.get('/sellerbook/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { sellerEmail: email }
+            console.log(query)
+            const books = await categoryBookCollection.find(query).toArray()
+            console.log(books)
+            res.send(books)
         })
 
         app.get('/user/orders/:email', async (req, res) => {
