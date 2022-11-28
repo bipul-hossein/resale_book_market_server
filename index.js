@@ -6,7 +6,7 @@ const cors = require('cors')
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const stripe = require("stripe")(process.env.STRIP_SECRET);
-console.log(process.env.STRIP_SECRET)
+
 
 //middleware
 app.use(express.json());
@@ -21,19 +21,18 @@ app.listen(port, () => {
 });
 
 
-//const uri = "mongodb://localhost:27017"
-const uri = `mongodb+srv://${process.env.DB}:${process.env.DP}@cluster0.8gaczek.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://user3:qZ4C9OLRchtc8q6H@cluster0.vfyc9gp.mongodb.net/?retryWrites=true&w=majority`
+
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-function verifyJWT(req, res, next) {
 
+
+function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).send('unauthorized access');
     }
-
     const token = authHeader.split(' ')[1];
-
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
         if (err) {
             return res.status(403).send({ message: 'forbidden access' })
@@ -45,14 +44,19 @@ function verifyJWT(req, res, next) {
 
 async function run() {
     try {
-        const categoriesCollection = client.db("resaleProductProducts").collection("categoryCollection");
-        const categoryBookCollection = client.db("resaleProductProducts").collection("booksCollection");
-        const bookingCollection = client.db("resaleProductProducts").collection("bookings");
-        const usersCollection = client.db("resaleProductProducts").collection("users");
-        const paymentCollection = client.db("resaleProductProducts").collection("payments");
 
 
+
+        const categoriesCollection = client.db("assignment12").collection("categoryCollection");
+        const categoryBookCollection = client.db("assignment12").collection("bookItems");
+        const bookingCollection = client.db("assignment12").collection("bookings");
+        const usersCollection = client.db("assignment12").collection("user");
+        const paymentCollection = client.db("assignment12").collection("payments");
+
+
+       
         app.get('/categories', async (req, res) => {
+
             const query = {}
             const categories = await categoriesCollection.find(query).toArray();
             res.send(categories)
