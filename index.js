@@ -45,11 +45,11 @@ function verifyJWT(req, res, next) {
 
 async function run() {
     try {
-        const categoriesCollection = client.db("resaleBookAssign12").collection("categoryCollection");
-        const categoryBookCollection = client.db("resaleBookAssign12").collection("booksCollection");
-        const bookingCollection = client.db("resaleBookAssign12").collection("bookings");
-        const usersCollection = client.db("resaleBookAssign12").collection("users");
-        const paymentCollection = client.db("resaleBookAssign12").collection("payments");
+        const categoriesCollection = client.db("resaleProductProducts").collection("categoryCollection");
+        const categoryBookCollection = client.db("resaleProductProducts").collection("booksCollection");
+        const bookingCollection = client.db("resaleProductProducts").collection("bookings");
+        const usersCollection = client.db("resaleProductProducts").collection("users");
+        const paymentCollection = client.db("resaleProductProducts").collection("payments");
 
 
         app.get('/categories', async (req, res) => {
