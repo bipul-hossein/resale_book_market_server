@@ -204,14 +204,6 @@ async function run() {
         app.post('/bookings', async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
-
-            const query = { _id: ObjectId(booking.categoryBookId) }
-            const updatedDoc = {
-                $set: {
-                    paid: false,
-                }
-            }
-            const updatedResult = await categoryBookCollection.updateOne(query, updatedDoc)
             res.send(result)
         });
 
