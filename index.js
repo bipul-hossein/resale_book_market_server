@@ -189,8 +189,13 @@ async function run() {
                     transactionId: payment.transactionId
                 }
             }
+            const advertisedIdUpdate ={
+                $set:{
+                    advertised: false,
+                }
+            }
 
-            const updatedResult = await categoryBookCollection.updateOne(queryForAddCategoryBook, updatedDoc)
+            const updatedResult = await categoryBookCollection.updateOne(queryForAddCategoryBook, advertisedIdUpdate)
             const updatedResultForBook = await bookingCollection.updateOne(query, updatedDoc)
             res.send(result);
         })
