@@ -21,11 +21,11 @@ app.listen(port, () => {
 });
 
 
-const uri = `mongodb+srv://user3:qZ4C9OLRchtc8q6H@cluster0.vfyc9gp.mongodb.net/?retryWrites=true&w=majority`
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vfyc9gp.mongodb.net/?retryWrites=true&w=majority`
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
+console.log(uri)
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -45,22 +45,23 @@ function verifyJWT(req, res, next) {
 async function run() {
     try {
 
+        //mongodb
+          const categoriesCollection = client.db("assignment12").collection("categoryCollection");
+          const categoryBookCollection = client.db("assignment12").collection("bookItems");
+          const bookingCollection = client.db("assignment12").collection("bookings");
+          const usersCollection = client.db("assignment12").collection("user");
+          const paymentCollection = client.db("assignment12").collection("payments"); 
 
 
-        const categoriesCollection = client.db("assignment12").collection("categoryCollection");
-        const categoryBookCollection = client.db("assignment12").collection("bookItems");
-        const bookingCollection = client.db("assignment12").collection("bookings");
-        const usersCollection = client.db("assignment12").collection("user");
-        const paymentCollection = client.db("assignment12").collection("payments");
+
+         app.get('/categories', async (req, res) => {
+ 
+             const query = {}
+             const categories = await categoriesCollection.find(query).toArray();
+             res.send(categories)
+         }) 
 
 
-       
-        app.get('/categories', async (req, res) => {
-
-            const query = {}
-            const categories = await categoriesCollection.find(query).toArray();
-            res.send(categories)
-        })
 
         app.get('/categories/:id', async (req, res) => {
             const { id } = req.params;
@@ -94,9 +95,7 @@ async function run() {
         app.get('/sellerbook/:email', async (req, res) => {
             const email = req.params.email;
             const query = { sellerEmail: email }
-            console.log(query)
             const books = await categoryBookCollection.find(query).toArray()
-            console.log(books)
             res.send(books)
         })
 
@@ -122,7 +121,7 @@ async function run() {
             res.send(allSeller)
 
         })
-        /////////
+
 
         app.get('/booking/:id', async (req, res) => {
             const id = req.params.id;
@@ -130,6 +129,34 @@ async function run() {
             const result = await bookingCollection.findOne(query);
             res.send(result)
         })
+
+        //////////
+        app.get('/advertisedbook', async (req, res) => {
+            const query = { advertised: true}
+            const result = await categoryBookCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        ///////
+        app.post('/advertisedproduct', async (req, res) => {
+            const advertisedId = req.body.id
+            const query = { _id: ObjectId(advertisedId) }
+            const updatedDoc = {
+                $set: {
+                    advertised: true,
+                }
+            }
+            const result = await categoryBookCollection.updateOne(query, updatedDoc)
+            res.send(result)
+
+
+        })
+
+
+
+        /////////
+
+
 
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
@@ -149,11 +176,12 @@ async function run() {
         });
 
 
-
         app.post('/payments', async (req, res) => {
             const payment = req.body;
             const result = await paymentCollection.insertOne(payment);
             const id = payment.bookingId
+            const categoryId = payment.categoryBookId
+            const queryForAddCategoryBook = { _id: ObjectId(categoryId) }
             const query = { _id: ObjectId(id) }
             const updatedDoc = {
                 $set: {
@@ -161,7 +189,9 @@ async function run() {
                     transactionId: payment.transactionId
                 }
             }
-            const updatedResult = await bookingCollection.updateOne(query, updatedDoc)
+
+            const updatedResult = await categoryBookCollection.updateOne(queryForAddCategoryBook, updatedDoc)
+            const updatedResultForBook = await bookingCollection.updateOne(query, updatedDoc)
             res.send(result);
         })
 
@@ -169,6 +199,14 @@ async function run() {
         app.post('/bookings', async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
+
+            const query = { _id: ObjectId(booking.categoryBookId) }
+            const updatedDoc = {
+                $set: {
+                    paid: false,
+                }
+            }
+            const updatedResult = await categoryBookCollection.updateOne(query, updatedDoc)
             res.send(result)
         });
 
